@@ -144,6 +144,14 @@ docker run -d --name telegraf --net=container:influxdb -v ~/telegraf.conf:/etc/t
 
 kapacitor define cpu_alert -type stream -tick ~/cpu_alert.tick -dbrp telegraf.autogen
 
+kapacitor show cpu_alert
+
+kapacitor enable cpu_alert
+
+kapacitor stats ingress
+
+cat /var/log/kapacitor
+
 Now the ip of the "kapacitor" container is found out  using 'docker inspet kapacitor'.
 and passed into the brwoser 
 e.g. http://172.17.0.3:9092/kapacitor/v1/tasks
