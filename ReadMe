@@ -1,0 +1,123 @@
+TICK Stack
+Run the complete TICK stack using this docker-compose file. By using docker-compose all four official TICK stack images are started and linked together.
+
+Steps followed(for installing TICK stack on docker)
+
+Start all the images as follows:
+
+docker-compose up -d
+
+Checking that InfluxDB works:
+
+Run this curl command, if no errors occur InfluxDB is running:
+
+curl http://localhost:8086/ping
+The influx client
+
+Use the built-in influx cli service:
+
+docker-compose run influxdb-cli
+Check that Telegraf works
+
+By default, the Telegraf creates a telegraf database. Check that InfluxDB has such a database in addition to the _internal database.
+
+docker-compose run influxdb-cli
+> show databases
+Check that Chronograf works
+
+Access the Chronograf inteface, http://localhost:10000
+
+Add InfluxDB server.
+
+Check Kapacitor works
+
+First, run this curl command, if no errors occur Kapacitor is running:
+
+curl http://localhost:9092/kapacitor/v1/ping
+Use the built-in kapacitor cli service:
+
+docker-compose run kapacitor-cli
+$ kapacitor list tasks
+Confirm Kapacitor is subscribed to all databases in InfluxDB
+
+docker-compose run influxdb-cli
+> show subscriptions
+
+
+
+
+
+
+
+Steps followed(for installing TICK stack on localhost)
+
+Install everything needed:
+
+Influxdb
+wget https://dl.influxdata.com/influxdb/releases/influxdb-1.1.1.x86_64.rpm
+
+sudo yum install influxdb-1.1.1.x86_64.rpm
+
+cat <<EOF | sudo tee /etc/yum.repos.d/influxdb.repo
+[influxdb]
+name = InfluxDB Repository - RHEL \$releasever
+baseurl = https://repos.influxdata.com/rhel/\$releasever/\$basearch/stable
+enabled = 1
+gpgcheck = 1
+gpgkey = https://repos.influxdata.com/influxdb.key
+EOF
+
+sudo yum install influxdb
+sudo systemctl start influxdb
+
+influxd -config /etc/influxdb/influxdb.conf
+
+echo $INFLUXDB_CONFIG_PATH
+/etc/influxdb/influxdb.conf
+
+
+influxd
+
+Telegraf
+
+
+Checking that InfluxDB works:
+
+Run this curl command, if no errors occur InfluxDB is running:
+
+curl http://localhost:8086/ping
+The influx client
+
+Use the built-in influx cli service:
+
+docker-compose run influxdb-cli
+Check that Telegraf works
+
+By default, the Telegraf creates a telegraf database. Check that InfluxDB has such a database in addition to the _internal database.
+
+docker-compose run influxdb-cli
+> show databases
+Check that Chronograf works
+
+Access the Chronograf inteface, http://localhost:10000
+
+Add InfluxDB server.
+
+Check Kapacitor works
+
+First, run this curl command, if no errors occur Kapacitor is running:
+
+curl http://localhost:9092/kapacitor/v1/ping
+Use the built-in kapacitor cli service:
+
+docker-compose run kapacitor-cli
+$ kapacitor list tasks
+Confirm Kapacitor is subscribed to all databases in InfluxDB
+
+docker-compose run influxdb-cli
+> show subscriptions
+Supported Docker versions
+
+
+
+
