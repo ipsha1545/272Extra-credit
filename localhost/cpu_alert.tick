@@ -5,7 +5,7 @@ stream
                 
         |alert()
                 .info(lambda: TRUE)
-                .warn(lambda: "value < 80")
-                .crit(lambda: "value < 70")
+                .warn(lambda: "usage_idle < 80")
+                .crit(lambda: "usage_idle < 70")
                 .log('/tmp/alert.log')
 
