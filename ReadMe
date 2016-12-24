@@ -116,9 +116,12 @@ Tickscript
 stream
     // Select just the cpu measurement from our example database.
     |from()
-        .measurement('cpu')
+        .measurement('usage_idle')
+        .where(lambda:'cpu' == 'cpu-total')
     |alert()
-        .crit(lambda: "usage_idle" <  70)
+        .crit(lambda: TRUE)
+        .warn(lambda: "value <  30")
+        .crit(lambda: "value <  10")
         // Whenever we get an alert write it to a file.
         .log('/tmp/alerts.log')
         
@@ -138,9 +141,11 @@ cat /tmp/alerts.log
 ---------
 docker run -d --name influxdb -p 8083:8083 -p 8086:8086 influxdb
 
-Created a tick-script and added to the -/tick folder
-
 docker run -d --name telegraf --net=container:influxdb -v ~/telegraf.conf:/etc/telegraf/telegraf.conf:ro telegraf
+
+docker run -p 9092:9092 -d --link influxdb:influxdb --name kapacitor -v ~/Downloads/kapacitor.conf:/etc/kapacitor/kapacitor.conf:ro -v ~/tick/:/root -w=/root kapacitor 
+
+Created a tick-script and added to the -/tick folder
 
 kapacitor define cpu_alert -type stream -tick ~/cpu_alert.tick -dbrp telegraf.autogen
 
