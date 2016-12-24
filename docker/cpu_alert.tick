@@ -1,10 +1,10 @@
-stream
-        |from()
-                .measurement('usage_idle')
-                .where(lambda: "cpu" == 'cpu-total')
-                
-        |alert()
-                .info(lambda: TRUE)
-                .warn(lambda: "value < 80")
-                .crit(lambda: "value < 70")
-                .log('/tmp/alert.log')
+ stream
+    // Select just the cpu measurement from our example database.
+    |from()
+        .measurement('cpu')
+    |alert()
+        .warn(lambda:’TRUE’)
+        .crit(lambda: ‘TRUE’)
+      // Whenever we get an alert write it to a file.
+        .log('/tmp/cpu_idle_alerts.log')
+
