@@ -1,7 +1,11 @@
+
 stream
-        |from()
-        .measurement('cpu')
-                
-    |alert()
-                .crit(lambda: "usage_idle" < 90 )
-        .log('/tmp/cpu_idle_alerts.log')
+       |from()
+               .measurement('usage_idle')
+               .where(lambda: "cpu" == 'cpu-total')
+              
+       |alert()
+               .info(lambda: TRUE)
+               .warn(lambda: "value < 30")
+               .crit(lambda: "value < 10")
+               .log('/tmp/alert.log')
