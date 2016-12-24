@@ -114,16 +114,15 @@ sudo systemctl start kapacitor
 Tickscript
 
 stream
-    // Select just the cpu measurement from our example database.
-    |from()
-        .measurement('usage_idle')
-        .where(lambda:'cpu' == 'cpu-total')
-    |alert()
-        .crit(lambda: TRUE)
-        .warn(lambda: "value <  30")
-        .crit(lambda: "value <  10")
-        // Whenever we get an alert write it to a file.
-        .log('/tmp/alerts.log')
+        |from()
+                .measurement('cpu')
+                .where(lambda: "cpu" == 'cpu-total')
+                
+        |alert()
+                .info(lambda: TRUE)
+                .warn(lambda: "usage_idle < 80")
+                .crit(lambda: "usage_idle < 70")
+                .log('/tmp/alert.log')
         
 kapacitor define -name cpu_alert -type stream -tick cpu_alert.tick -dbrp kapacitor_example.default
 
