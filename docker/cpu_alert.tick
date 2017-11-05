@@ -1,3 +1,5 @@
+// Environment: test
+// Task: test_cpu_alert
  stream
     // Select just the cpu measurement from our example database.
     |from()
@@ -6,5 +8,5 @@
         .warn(lambda:’TRUE’)
         .crit(lambda: ‘TRUE’)
       // Whenever we get an alert write it to a file.
+        .id('{{ [CPU_Used]')
         .log('/tmp/cpu_idle_alerts.log')
-
