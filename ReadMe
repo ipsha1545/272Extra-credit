@@ -1,4 +1,4 @@
-TICK Stack
+TICK Stack Docker
 -------------
 
 1.DOCKER-COMPOSE
@@ -11,22 +11,58 @@ Start all the images as follows:
 
 docker-compose up -d
 
+Verify that all docker processes are running using this command:
+
+docker ps
+CONTAINER ID        IMAGE                  COMMAND                  CREATED             STATUS              PORTS                                                                    NAMES
+c5e0aa0294b6        chronograf:1.0.0-rc1   "/entrypoint.sh ch..."   3 minutes ago       Up 2 minutes        0.0.0.0:10000->10000/tcp                                                 dockercompose_chronograf_1
+5fc8f1a8b35d        telegraf:1.0.0-rc1     "/entrypoint.sh te..."   3 minutes ago       Up 2 minutes        0.0.0.0:8092->8092/udp, 0.0.0.0:8125->8125/udp, 0.0.0.0:8094->8094/tcp   dockercompose_telegraf_1
+61df5e4550cf        kapacitor:1.0.0-rc1    "/entrypoint.sh ka..."   3 minutes ago       Up 2 minutes        0.0.0.0:9092->9092/tcp                                                   dockercompose_kapacitor_1
+e094816bfbda        influxdb:1.0.0-rc1     "/entrypoint.sh in..."   3 minutes ago       Up 3 minutes        0.0.0.0:8086->8086/tcp                                                   dockercompose_influxdb_1
+
 Checking that InfluxDB works:
 
 Run this curl command, if no errors occur InfluxDB is running:
 
 curl http://localhost:8086/ping
+
 The influx client
 
 Use the built-in influx cli service:
 
 docker-compose run influxdb-cli
-Check that Telegraf works
+
+Check that Telegraf works.
 
 By default, the Telegraf creates a telegraf database. Check that InfluxDB has such a database in addition to the _internal database.
 
 docker-compose run influxdb-cli
+
 > show databases
+name: databases
+---------------
+name
+telegraf
+_internal
+
+We can verify that _internal database Infact exits.
+
+To use telegraf database, Use this command: This should connect you to the telegraf database and you can use the show measurements command to see the measurements in this Databases
+
+> use telegraf
+Using database telegraf
+
+> show measurements
+name: measurements
+------------------
+name
+cpu
+disk
+diskio
+mem
+swap
+system
+
 Check that Chronograf works
 
 Access the Chronograf inteface, http://localhost:10000
@@ -40,12 +76,27 @@ First, run this curl command, if no errors occur Kapacitor is running:
 curl http://localhost:9092/kapacitor/v1/ping
 Use the built-in kapacitor cli service:
 
-docker-compose run kapacitor-cli
+To connect to kapacitor cli use this :docker-compose run kapacitor-cli
+
 $ kapacitor list tasks
+root@99ab493de8c4:/# kapacitor list tasks
+ID                            Type      Status    Executing Databases and Retention Policies
+
 Confirm Kapacitor is subscribed to all databases in InfluxDB
 
 docker-compose run influxdb-cli
+
 > show subscriptions
+name: telegraf
+--------------
+retention_policy	name						mode	destinations
+autogen			kapacitor-8dee0478-8fa0-464f-92c1-2393d4a92904	ANY	[http://kapacitor:9092]
+
+
+name: _internal
+---------------
+retention_policy	name						mode	destinations
+monitor			kapacitor-8dee0478-8fa0-464f-92c1-2393d4a92904	ANY	[http://kapacitor:9092]
 
 
 2.LOCALHOST
@@ -95,8 +146,8 @@ cat <<EOF | sudo tee /etc/yum.repos.d/influxdb.repo
   EOF
 
 sudo yum install telegraf
-  
-sudo systemctl start telegraf 
+
+sudo systemctl start telegraf
 
 telegraf -sample-config > telegraf.conf
 
@@ -117,13 +168,13 @@ stream
         |from()
                 .measurement('cpu')
                 .where(lambda: "cpu" == 'cpu-total')
-                
+
         |alert()
                 .info(lambda: TRUE)
                 .warn(lambda: "usage_idle < 80")
                 .crit(lambda: "usage_idle < 70")
                 .log('/tmp/alert.log')
-        
+
 kapacitor define -name cpu_alert -type stream -tick cpu_alert.tick -dbrp kapacitor_example.default
 
 kapacitor show cpu_alert
@@ -142,7 +193,7 @@ docker run -d --name influxdb -p 8083:8083 -p 8086:8086 influxdb
 
 docker run -d --name telegraf --net=container:influxdb -v ~/telegraf.conf:/etc/telegraf/telegraf.conf:ro telegraf
 
-docker run -p 9092:9092 -d --link influxdb:influxdb --name kapacitor -v ~/Downloads/kapacitor.conf:/etc/kapacitor/kapacitor.conf:ro -v ~/tick/:/root -w=/root kapacitor 
+docker run -p 9092:9092 -d --link influxdb:influxdb --name kapacitor -v ~/Downloads/kapacitor.conf:/etc/kapacitor/kapacitor.conf:ro -v ~/tick/:/root -w=/root kapacitor
 
 Created a tick-script and added to the -/tick folder
 
@@ -156,12 +207,6 @@ kapacitor stats ingress
 
 cat /var/log/kapacitor
 
-Now the ip of the "kapacitor" container is found out  using 'docker inspet kapacitor'.
-and passed into the brwoser 
+Now the ip of the "kapacitor" container is found out  using 'docker inspect kapacitor'.
+and passed into the brwoser
 e.g. http://172.17.0.3:9092/kapacitor/v1/tasks
-
-
-
-
-
-
